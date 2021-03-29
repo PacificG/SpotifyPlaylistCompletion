@@ -6,7 +6,7 @@ import csv
 class Dataset:
     track_uri2id = {}
     track_id2uri = {}
-    track_id2aa = {}
+    track_id2aauri = {}
     albums_uri2id = {}
     artists_uri2id = {}
     
@@ -18,6 +18,33 @@ class Dataset:
             with open(f'{playlistPath}/{file}') as f:
                 self.files[file] = json.load(f)
                 for playlist in self.files[file]['playlists']:
+                    for track in playlist['tracks']:
+                        track_uri, album_uri, artist_uri = track['track_uri'], track['album_uri'], track['artist_uri']
+                        if track_uri not in self.track_uri2id:
+                            trackid += 1
+                            self.track_uri2id[track_uri] = trackid
+                            self.track_id2uri[trackid] = track_uri
+                            if album_uri not in self.albums_uri2id:
+                                albumid += 1
+                                self.albums_uri2id[album_uri] = albumid
+                            
+                            if artist_uri not in self.artists_uri2id:
+                                artistid += 1
+                                self.artists_uri2id[artist_uri] = artistid
+
+                        self.track_id2aauri[self.track_uri2id[track_uri]] = (album_uri, artist_uri)
+
+    def playlist_gen(self):
+        for file in self.files:
+            for playlist in self.files[file]['playlists']:
+                this_playlist = {}
+                this_playlist['pid'] = playlist['pid']
+                this_playlist['tracks'] = [self.track_uri2id[track['track_uri']] for track in playlist['tracks']]
+
+                yield this_playlist
+
+    
+                    
                     
     def playlistCSV(self, csvpath):
         with open(f'{csvpath}/playlist.csv', 'w', newline='') as f:
@@ -39,6 +66,6 @@ class Dataset:
                         writer.writerow([playlist['pid'], track['pos'], track['track_uri']])
     def reader(self):
         for file in self.files:
-            for playlist
-            
+            pass
+    
     
