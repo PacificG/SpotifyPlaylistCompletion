@@ -1,3 +1,4 @@
+import gensim
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.test.utils import datapath
@@ -18,28 +19,49 @@ class Corpus:
         play_gen = self.dataset.playlist_gen()
         for playlist in play_gen:
             for track_id in playlist['tracks']:
-                self.fn(track_id).split(" ")
+                yield self.fn(track_id).split(" ")
             
 def word2vectors(dataset):
     tracks = Corpus(dataset, 'track')
-    tracksmodel = gensim.models.Word2Vec(sentences=tracks, sg=1, min_count = 1, size=100, window=5,
-                                       alpha=0.025 , min_alpha=0.0001 ,workers=2)
+    tracksmodel = gensim.models.Word2Vec(sentences=tracks, sg=1, min_count = 1, size=100, window=5, alpha=0.025 , min_alpha=0.0001 ,workers=2)
     gen = dataset.playlist_gen()
-    track2vec = {track_id: sum([tracksmodel.wv[word] for word in dataset.trackName4tid(track_id).split(" ")]) for track_id in playlist['tracks'] for playlist in gen}
+    track2vec = {}
+    for playlist in gen:
+        for track_id in playlist['tracks']:
+            if track_id not in track2vec:
+                track2vec[track_id] = sum([tracksmodel.wv[word] for word in dataset.trackName4tid(track_id).split(" ")])
 
+                
     artists = Corpus(dataset, 'artist')
     artistsmodel = gensim.models.Word2Vec(sentences=artists, sg=1, min_count=1, size=100, window=5, alpha=0.025, min_alpha=0.0001, workers=2)
     gen = dataset.playlist_gen()
-    artist2vec = {track_id: sum([artistsmodel.wv[word] for word in dataset.trackName4tid(track_id).split(" ")]) for track_id in playlist['tracks'] for playlist in gen}
+    artist2vec = {}
+
+    for playlist in gen:
+        for track_id in playlist['tracks']:
+            if track_id not in artist2vec:
+                artist2vec[track_id] = sum([artistsmodel.wv[word] for word in dataset.artistName4tid(track_id).split(" ")])
+
 
     albums = Corpus(dataset, 'album')
     albumsmodel = gensim.models.Word2Vec(sentences=albums, sg=1, min_count=1, size=100, window=5, alpha=0.025, min_alpha=0.0001, workers=2)
     gen = dataset.playlist_gen()
-    album2vec = {track_id: sum([albumsmodel.wv[word] for word in dataset.trackName4tid(track_id).split(" ")]) for track_id in playlist['tracks'] for playlist in gen}
+    album2vec = {}
+    for playlist in gen:
+        for track_id in playlist['tracks']:
+            if track_id not in album2vec:
+                album2vec[track_id] = sum([albumsmodel.wv[word] for word in dataset.albumName4tid(track_id).split(" ")])
+                
 
     return track2vec, album2vec, artist2vec
 
 
-def title2rec(track2vec):
-    pass
+def title2rec(track2vec, dataset):
+    gen = dataset.playlist_gen()
+    playlist2vec = {}
+    for playlist in gen:
+        playlist2vec[playlist['pid']] = np.mean([track2vec[track_id] for track_id in playlist['tracks']])
+
+    
+    
     

@@ -44,14 +44,14 @@ class Dataset:
                 yield this_playlist
 
     
-    def trackName4id(self, track_id):
+    def trackName4tid(self, track_id):
         return self.track_id2uri[track_id][1]
 
-    def albumName4uri(self, album_uri):
-        return self.albums_uri2id[self.dataset.track_id2aauri[track_id][0]][1]
+    def albumName4tid(self, track_id):
+        return self.albums_uri2id[self.track_id2aauri[track_id][0]][1]
 
-    def artistName4uri(self, artist_uri):
-        return self.artists_uri2id[self.dataset.track_id2aauri[track_id][1]][1]
+    def artistName4tid(self, track_id):
+        return self.artists_uri2id[self.track_id2aauri[track_id][1]][1]
                     
     def playlistCSV(self, csvpath):
         with open(f'{csvpath}/playlist.csv', 'w', newline='') as f:
@@ -71,8 +71,5 @@ class Dataset:
                 for playlist in self.files[file]['playlists']:
                     for track in playlist['tracks']:
                         writer.writerow([playlist['pid'], track['pos'], track['track_uri']])
-    def reader(self):
-        for file in self.files:
-            pass
     
     
