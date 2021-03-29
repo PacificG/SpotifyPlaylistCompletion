@@ -23,14 +23,14 @@ class Dataset:
                         if track_uri not in self.track_uri2id:
                             trackid += 1
                             self.track_uri2id[track_uri] = trackid
-                            self.track_id2uri[trackid] = track_uri
+                            self.track_id2uri[trackid] = (track_uri, track['track_name'])
                             if album_uri not in self.albums_uri2id:
                                 albumid += 1
-                                self.albums_uri2id[album_uri] = albumid
+                                self.albums_uri2id[album_uri] = (albumid, track['album_name'])
                             
                             if artist_uri not in self.artists_uri2id:
                                 artistid += 1
-                                self.artists_uri2id[artist_uri] = artistid
+                                self.artists_uri2id[artist_uri] = (artistid, track['artist_name'])
 
                         self.track_id2aauri[self.track_uri2id[track_uri]] = (album_uri, artist_uri)
 
@@ -44,7 +44,14 @@ class Dataset:
                 yield this_playlist
 
     
-                    
+    def trackName4id(self, track_id):
+        return self.track_id2uri[track_id][1]
+
+    def albumName4uri(self, album_uri):
+        return self.albums_uri2id[self.dataset.track_id2aauri[track_id][0]][1]
+
+    def artistName4uri(self, artist_uri):
+        return self.artists_uri2id[self.dataset.track_id2aauri[track_id][1]][1]
                     
     def playlistCSV(self, csvpath):
         with open(f'{csvpath}/playlist.csv', 'w', newline='') as f:
