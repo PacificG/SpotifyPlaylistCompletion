@@ -1,6 +1,9 @@
 import gensim
 import numpy as np
 from sklearn.cluster import KMeans
+import fasttext
+
+path = '/content/drive/MyDrive/workspace/PlaylistCompletion/'
 
 class Corpus:
     def __init__(self, dataset, vec2get):
@@ -53,25 +56,38 @@ def word2vectors(dataset):
     return track2vec, album2vec, artist2vec
 
 
-def title2rec(track2vec, dataset, n_clusters=500):
-    gen = dataset.playlist_gen()
-    playlist2vec = {}
-    for playlist in gen:
-        playlist2vec[playlist['pid']] = [playlist['title'], np.mean([track2vec[track_id] for track_id in playlist['tracks']],axis=0)]
-    X = np.array([playlist2vec[pid][1] for pid in playlist2vec])
-    kmeans = KMeans(n_clusters=10, random_state=0).fit(X)
-    clusters = kmeans.predict(X)
-    clstr = iter(clusters)
-    for pid in playlist2vec:
-        playlist2vec[pid].append(next(clstr))
-    clustertext = {c:'' for c in set(clusters)}
-    for pid in playlist2vec:
-        clustertext[playlist2vec[pid][2]] += (" "+ playlist2vec[pid][0])
+def textfast(file_path):
+    fastmodel = fasttext.train_unsupervised(file_path, model='skipgram', lr=0.1, epoch=5, loss='softmax', ws=5)
+    return fastmodel
+    
+
+def title2rec(track2vec, dataset, n_clusters=500,load=False):
+    if not load:
+        gen = dataset.playlist_gen()
+        playlist2vec = {}
+        for playlist in gen:
+            playlist2vec[playlist['pid']] = [playlist['title'], np.mean([track2vec[track_id] for track_id in playlist['tracks']],axis=0)]
+        X = np.array([playlist2vec[pid][1] for pid in playlist2vec])
+        kmeans = KMeans(n_clusters=10, random_state=0).fit(X)
+        clusters = kmeans.predict(X)
+        clstr = iter(clusters)
+        for pid in playlist2vec:
+            playlist2vec[pid].append(next(clstr))
+        clustertext = {c:'' for c in set(clusters)}
+        for pid in playlist2vec:
+            clustertext[playlist2vec[pid][2]] += (" "+ playlist2vec[pid][0])
+        f = open(f"{path}/text.txt", 'w')
+        for id in clustertext:
+            print(clustertext[id])
+            f.write(clustertext[id]+ "\n")
+        f.close()
+    model = textfast(f"{path}/text.txt")
     
         
-    return playlist2vec, clustertext
+    return model
      
-     
+
+
     
     
     
