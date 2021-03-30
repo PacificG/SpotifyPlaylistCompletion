@@ -1,9 +1,6 @@
 import gensim
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from gensim.test.utils import datapath
-from gensim import utils
-from gensim.parsing.preprocessing import preprocess_string, preprocess_documents
+from sklearn.cluster import KMeans
 
 class Corpus:
     def __init__(self, dataset, vec2get):
@@ -56,12 +53,28 @@ def word2vectors(dataset):
     return track2vec, album2vec, artist2vec
 
 
-def title2rec(track2vec, dataset):
+def title2rec(track2vec, dataset, n_clusters=500):
     gen = dataset.playlist_gen()
     playlist2vec = {}
     for playlist in gen:
-        playlist2vec[playlist['pid']] = np.mean([track2vec[track_id] for track_id in playlist['tracks']])
+        playlist2vec[playlist['pid']] = [playlist['title'], np.mean([track2vec[track_id] for track_id in playlist['tracks']],axis=0)]
+    X = np.array([playlist2vec[pid][1] for pid in playlist2vec])
+    kmeans = KMeans(n_clusters=10, random_state=0).fit(X)
+    clusters = kmeans.predict(X)
+    clstr = iter(clusters)
+    for pid in playlist2vec:
+        playlist2vec[pid].append(next(clstr))
+    clustertext = {c:'' for c in set(clusters)}
+    for pid in playlist2vec:
+        clustertext[playlist2vec[pid][2]] += (" "+ playlist2vec[pid][0])
+    
+        
+    return playlist2vec, clustertext
+     
+     
+    
+    
+    
 
-    
-    
+        
     

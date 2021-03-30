@@ -39,6 +39,7 @@ class Dataset:
             for playlist in self.files[file]['playlists']:
                 this_playlist = {}
                 this_playlist['pid'] = playlist['pid']
+                this_playlist['title']= playlist["name"]
                 this_playlist['tracks'] = [self.track_uri2id[track['track_uri']] for track in playlist['tracks']]
 
                 yield this_playlist

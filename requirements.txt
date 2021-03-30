@@ -1,0 +1,7 @@
+numpy
+gensim
+emot
+pandas
+pyfasttext
+sklearn
+tensorflow
