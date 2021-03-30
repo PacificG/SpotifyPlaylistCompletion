@@ -2,6 +2,7 @@ import gensim
 import numpy as np
 from sklearn.cluster import KMeans
 import fasttext
+from sklearn.metrics.pairwise import cosine_similarity
 
 path = '/content/drive/MyDrive/workspace/PlaylistCompletion/'
 
@@ -61,7 +62,7 @@ def textfast(file_path):
     return fastmodel
     
 
-def title2rec(track2vec, dataset, n_clusters=500,load=False):
+def cluster2rec(track2vec, dataset, n_clusters=500,load=False):
     if not load:
         gen = dataset.playlist_gen()
         playlist2vec = {}
@@ -83,12 +84,22 @@ def title2rec(track2vec, dataset, n_clusters=500,load=False):
         f.close()
     model = textfast(f"{path}/text.txt")
     
-        
     return model
      
+def cosine_sim(a, b):
+    dot = np.dot(a,b)
+    norma = np.linalg.norm(a)
+    normb = np.linalg.norm(b)
+    return dot / (norma *normb)
 
-
-    
+def title2rec(title, model, dataset):
+    tEmbed = model.get_sentence_vector(title)
+    similar = []
+    gen = dataset.playlist_gen()
+    for playlist in gen:
+        similar.append((playlist['pid'], playlist['title'], cosine_sim(model.get_sentence_vector(playlist['title'].strip()), tEmbed)))
+    similar.sort(key=lambda x: x[2], reverse=True)
+    return similar[:300]
     
     
 
