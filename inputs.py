@@ -7,6 +7,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 path = '/content/drive/MyDrive/workspace/PlaylistCompletion/'
 
 class Corpus:
+    """
+    iterator for gensim model to train on. returns Name of tracks, albums, artist given tid
+    """
     def __init__(self, dataset, vec2get):
         self.dataset = dataset
         if vec2get == "track":
@@ -23,6 +26,10 @@ class Corpus:
                 yield self.fn(track_id).split(" ")
             
 def word2vectors(dataset):
+    """
+    trains word2vec models on tracks, albums, artists seperately and use them to get track2vec, album2vec and 
+    artist2vec
+    """
     tracks = Corpus(dataset, 'track')
     tracksmodel = gensim.models.Word2Vec(sentences=tracks, sg=1, min_count = 1, size=100, window=5, alpha=0.025 , min_alpha=0.0001 ,workers=2)
     gen = dataset.playlist_gen()
@@ -58,11 +65,17 @@ def word2vectors(dataset):
 
 
 def textfast(file_path):
+    """
+    Fast text model
+    """
     fastmodel = fasttext.train_unsupervised(file_path, model='skipgram', lr=0.1, epoch=5, loss='softmax', ws=5)
     return fastmodel
     
 
 def cluster2rec(track2vec, dataset, n_clusters=500,load=False):
+    """
+    performs kmeans clustering on playlists and returns fasttext model
+    """
     if not load:
         gen = dataset.playlist_gen()
         playlist2vec = {}
@@ -87,12 +100,16 @@ def cluster2rec(track2vec, dataset, n_clusters=500,load=False):
     return model
      
 def cosine_sim(a, b):
+    """computes cosine similarity between two vectors"""
     dot = np.dot(a,b)
     norma = np.linalg.norm(a)
     normb = np.linalg.norm(b)
     return dot / (norma *normb)
 
 def title2rec(title, model, dataset):
+    """
+    Given a playlist title returns 300 most similar playlists
+    """
     tEmbed = model.get_sentence_vector(title)
     similar = []
     gen = dataset.playlist_gen()

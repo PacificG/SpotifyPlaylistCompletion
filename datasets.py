@@ -35,6 +35,9 @@ class Dataset:
                         self.track_id2aauri[self.track_uri2id[track_uri]] = (album_uri, artist_uri)
 
     def playlist_gen(self):
+        """
+        generator yields playlists
+        """
         for file in self.files:
             for playlist in self.files[file]['playlists']:
                 this_playlist = {}
@@ -46,12 +49,19 @@ class Dataset:
 
     
     def trackName4tid(self, track_id):
+        """returns track Name for given rack id"""
         return self.track_id2uri[track_id][1]
 
     def albumName4tid(self, track_id):
+        """
+        returns album name for a given track id
+        """
         return self.albums_uri2id[self.track_id2aauri[track_id][0]][1]
 
     def artistName4tid(self, track_id):
+        """
+        returns artist name for a given track id
+        """
         return self.artists_uri2id[self.track_id2aauri[track_id][1]][1]
                     
     def playlistCSV(self, csvpath):

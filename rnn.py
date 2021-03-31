@@ -3,12 +3,16 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, LSTM, TimeDistributed#, CuDNNLSTM
 import numpy as np
 def get_trackvec(t2v, al2v, ar2v):
+    """for each track it concatenates track, album and artist embeddings to get 300dim vector"""
     trackvec = {}
     for tid in t2v:
         trackvec[tid] = np.concatenate((t2v[tid], al2v[tid], ar2v[tid]), axis=None)
     return trackvec
 
 def train_generator(t2v, al2v, ar2v, dataset):
+    """
+    returns a generator object that returns train and output of dim (n_tracks-1)*300 for each playlist
+    """
     gen = dataset.playlist_gen()
     trackvec = get_trackvec(t2v, al2v, ar2v)
     for playlist in gen:
@@ -17,9 +21,12 @@ def train_generator(t2v, al2v, ar2v, dataset):
         yield x_train, y_train
 
 def rnn():
+    """
+    compiles and returns rnn model
+    """
     model = Sequential()
 
-    model.add(LSTM(128, return_sequences=True, input_shape=(None,1)))
+    model.add(LSTM(128, return_sequences=True, input_shape=(None,300)))
 #    model.add(Dropout(0.2))
 
 
@@ -37,5 +44,10 @@ def rnn():
     )
     return model
 
+def recommender(seed_playlist, model):
+    while len(seed_playlist['tracks']) < 500:
+        next_track_id = max(seed_playlist, key=lambda x: x['tracks'][0])
+        seed_playlist['tracks'].append(next_track_id)
+    return seed_playlist
 
 
