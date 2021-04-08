@@ -4,16 +4,23 @@ import json
 import pandas as pd
 import csv
 class Dataset:
-    track_uri2id = {}
-    track_id2uri = {}
-    track_id2aauri = {}
-    albums_uri2id = {}
-    artists_uri2id = {}
+    """
+    Custom class to work with the dataset
+    """
+    track_uri2id = {}   #dictonary containing mappings from trackURI to track_id
+    track_id2uri = {}   #dictonary containing mappings from track_id to trackURI
+    track_id2aauri = {}  #dictonary containing mappings from track_id to album_uri and artist_uri for that track
+    albums_uri2id = {}  #dictonary containing mappings from album_uri to album_id
+    artists_uri2id = {} #dictonary containing mappings from artist_uri to artist_id
     
     def __init__(self, playlistPath):
+        """
+        processes all the json files in path provided. for all the playlists in those files. creates mappings necessary 
+        for smooth fetching of artists, albums and tracks data
+        """
         dirs = os.listdir(playlistPath)
         self.files = {}
-        trackid, albumid, artistid = 0,0,0
+        trackid, albumid, artistid = 0,0,0 #ids are integers starting from 0. artists, albums and tracks have seperate ids
         for file in dirs:
             with open(f'{playlistPath}/{file}') as f:
                 self.files[file] = json.load(f)
@@ -36,7 +43,9 @@ class Dataset:
 
     def playlist_gen(self):
         """
-        generator yields playlists
+        this generator yields playlists one by one
+        format of playlist is like this:
+        {pid:'101', title:'playlist name', "trakcs":[track_id for tracks in playlist]}
         """
         for file in self.files:
             for playlist in self.files[file]['playlists']:
@@ -65,6 +74,9 @@ class Dataset:
         return self.artists_uri2id[self.track_id2aauri[track_id][1]][1]
                     
     def playlistCSV(self, csvpath):
+        """
+        helper method to create intermediate csv for playlists
+        """
         with open(f'{csvpath}/playlist.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             names = ['name', 'collaborative','num_tracks','num_artists',
@@ -74,6 +86,9 @@ class Dataset:
                 for playlist in self.files[file]['playlists']:
                     writer.writerow([playlist[name] for name in names])
     def trackCSV(self, csvpath):
+        """
+        helper method to create intermediate csv for tracks
+        """
         with open(f'{csvpath}/track.csv','w', newline='') as f:
             writer = csv.writer(f)
             names = ['pid', 'pos','track_uri']

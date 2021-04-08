@@ -45,8 +45,11 @@ def rnn():
     return model
 
 def recommender(seed_playlist, model):
+    """
+    Adds tracks to playlists till there are 500 tracks. 
+    """
     while len(seed_playlist['tracks']) < 500:
-        next_track_id = max(seed_playlist, key=lambda x: x['tracks'][0])
+        next_track_id = max([track for track in tracks if track not in seed_playlist['tracks']], key=lambda x: model.get_logits(x))
         seed_playlist['tracks'].append(next_track_id)
     return seed_playlist
 

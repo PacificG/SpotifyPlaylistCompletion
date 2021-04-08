@@ -20,6 +20,9 @@ class Corpus:
             self.fn = self.dataset.artistName4tid
 
     def __iter__(self):
+        """
+        iterator method yields artist name, album name and track name for a particular track_id
+        """
         play_gen = self.dataset.playlist_gen()
         for playlist in play_gen:
             for track_id in playlist['tracks']:
